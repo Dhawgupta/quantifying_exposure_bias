@@ -7,5 +7,5 @@
     --do_train \
     --do_eval \
     --block_size 256 \
-    --output_dir ./oracle/ \
+    --output_dir ./oracle256/ 
 

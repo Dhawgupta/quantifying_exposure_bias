@@ -27,7 +27,7 @@ import logging
 import math
 import os
 # import os
-os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
+# os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:512"
 import sys
 from dataclasses import dataclass, field
 from typing import Optional
