@@ -8,3 +8,4 @@
     --do_eval \
     --block_size 512 \
     --output_dir ./oracle/
+    --overwrtie_output_dir
