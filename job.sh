@@ -2,8 +2,8 @@
 #SBATCH -c 16  # Number of Cores per Task
 #SBATCH --mem=64G  # Requested Memory
 #SBATCH -p gpu-long  # Partition
-#SBATCH -G 8  # Number of GPUs
-#SBATCH -t 0-23:00:00  # Job time limit
+#SBATCH -G 6  # Number of GPUs
+#SBATCH -t 6-23:00:00  # Job time limit
 #SBATCH -o slurm-%j.out  # %j = job ID
 module load miniconda
 conda activate cs685
