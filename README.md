@@ -26,8 +26,8 @@ Accompanying repository for the paper: Why Exposure Bias Matters: An Imitation L
 ### Command to evaluate the exposue bias of GPT-2 model
 ```python
 python decoding_experiments.py \
-   --oracle-model <path to oracle model> \
-   --eval-model <path or name of the eval model.> \
+   --oracle-model ./gpt2_med_wiki/ \
+   --eval-model ./gpt2_wiki/ \
    --context-dataset wikitext-103 \
    --context-len 50 \
    --top-ks 10,50,100,5,500 \
@@ -35,3 +35,13 @@ python decoding_experiments.py \
    --sampling-temperatures 0.5 1,1.2,1.5,2
    --beams 2,5,10,30
 ```
+
+python decoding_experiments.py \
+   --oracle-model ./gpt2_med_wiki/ \
+   --eval-model ./gpt2_wiki/ \
+   --context-dataset wikitext-103 \
+   --context-len 50 \
+   --top-ks 10,50 \
+   --top-ps 0.9,0.8 \
+   --sampling-temperatures 0.5 1
+   --beams 2,5
