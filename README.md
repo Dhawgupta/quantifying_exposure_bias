@@ -49,4 +49,4 @@ python decoding_experiments.py \
 python decoding_experiments.py \
    --oracle-model ./gpt2_med_wiki/ \
    --eval-model ./gpt2_small_wiki/ \
-   --context-dataset wikitext-103 
+   --context-dataset wikitext-103 --cuda_device 0
