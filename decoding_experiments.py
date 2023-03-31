@@ -233,7 +233,20 @@ if __name__ == '__main__':
           context_len=args.context_len,
           cuda_device=args.cuda_device,
           sample_outputs=False,
-          experiment_suffix=experiment_suffix)
+          experiment_suffix=experiment_suffix,
+          top_k = 50,
+          top_p = 0.8,
+          repeat_penalty = 1.0,
+          beam = 5,
+          sample_outputs = False,
+          sampling_temperature = 1.0)
+  #          top_k: int = None,
+  #                         top_p: float = None,
+  #                         repeat_penalty: float = None, 
+  #                         beam: int = None,
+  #                         sample_outputs: bool = False,
+  #                         sampling_temperature: float = None,)
+  # exit()
 
   if len(args.context_lens) > 0:
     experiment_name += '_context_len_exp'
