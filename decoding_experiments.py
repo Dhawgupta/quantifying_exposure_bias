@@ -238,7 +238,6 @@ if __name__ == '__main__':
           top_p = 0.8,
           repeat_penalty = 1.0,
           beam = 5,
-          sample_outputs = False,
           sampling_temperature = 1.0)
   #          top_k: int = None,
   #                         top_p: float = None,
