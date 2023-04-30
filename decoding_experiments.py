@@ -238,7 +238,10 @@ if __name__ == '__main__':
           top_p = 0.9,
           repeat_penalty = 1.0,
           beam = 2,
-          sampling_temperature = 1.0)
+          sampling_temperature = 1.0,
+          generation_size = 512)
+          # single GPU fails for 512 and 256
+          # Single rtx8000 can handle 512, with 21 GB's of memory used mostly, so I can make use of 24 GB cards too probably
   #          top_k: int = None,
   #                         top_p: float = None,
   #                         repeat_penalty: float = None, 

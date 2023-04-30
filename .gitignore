@@ -130,3 +130,7 @@ dmypy.json
 
 ./oracle/
 oracle/*
+
+*.out
+
+wandb/*
