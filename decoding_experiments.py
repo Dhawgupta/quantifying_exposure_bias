@@ -10,6 +10,34 @@ from quant_exp_bias.commands.quantify_exposure_bias_pretrained import quantify_e
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
+def get_accum_results_dhawal(run_metrics: Dict[str, Any], prefix='exp_bias'):
+    for key in ["disagreements_till_len", "disagreements_at_len"]:
+        for key_ in (key, f"target_{key}"):
+            if key_ not in run_metrics:
+                continue
+
+            for k, values in run_metrics[key_].items():
+                for idx, val in values:
+                    yield {
+                        f'{prefix}/{key_}@{k}/{key}': val,
+                        f'len': idx,
+                    }
+    # list_dicts = []
+    # for key in ["kl_till_len", "Hmo_till_len", "Hmm_till_len", "cross_ent_till_len",
+    #             "excess_acc_err_till_len", "acc_err_till_len", "kl_till_len_norm",
+    #             "model_xent_till_len", "oracle_xent_till_len",
+    #             "model_xent_ratio", "target_xent_ratio_norm",
+    #             "model_xent_till_len_accum", "oracle_xent_till_len_accum",
+    #             "kl_at_len", "Hmo_at_len", "Hmm_at_len", "cross_ent_at_len", 
+    #             "model_xent_at_len", "oracle_xent_at_len"]:
+    #     for key_ in (key, f"target_{key}", f"ratio_{key}"):
+    #         if key_ not in run_metrics:
+    #             continue
+                
+            
+    #         for idx, val in run_metrics[key_]:
+
+                
 def get_eb_accum_results(run_metrics: Dict[str, Any], prefix='exp_bias'):
     for key in ["kl_till_len", "Hmo_till_len", "Hmm_till_len", "cross_ent_till_len",
                 "excess_acc_err_till_len", "acc_err_till_len", "kl_till_len_norm",
@@ -123,16 +151,25 @@ def run_exposure_bias_experiment(experiment_name,
                           generation_size: int = 512,
                           batch_size: int = 16, 
                           experiment_suffix=''):
-  output_dir = os.path.join(base_output_dir, 
+    output_dir = os.path.join(base_output_dir, 
                     'exp_bias', experiment_suffix)
 
-  experiment = wandb.init(
-          dir=output_dir,
-          config=config,
-          project='qeb',
-          group=experiment_name)
+    # experiment = wandb.init(
+    #         dir=output_dir,
+    #         config=config,
+    #         project='qeb',
+    #         group=experiment_name)
+    experiment = wandb.init(
+            dir=output_dir,
+            config=config,
+            project='qeb',
+            group='debug')
+    # experiment = wandb.init(
+    #         dir=output_dir,
+    #         config=config,
+    #         project='qeb')
 
-  metrics = quantify_exposure_bias_pretrained(output_dir,
+    metrics = quantify_exposure_bias_pretrained(output_dir,
                 eval_model=eval_model, 
                 oracle_model=oracle_model,
                 context_file_or_filename=context_file_or_filename,
@@ -150,13 +187,57 @@ def run_exposure_bias_experiment(experiment_name,
                 generation_size=generation_size,
                 batch_size=batch_size)
 
-  prefix=f'exp_bias/{experiment_suffix}'
-  for metric in get_eb_accum_results(metrics, prefix=prefix):
-      experiment.log(metric)
+    prefix=f'exp_bias/{experiment_suffix}'
+    for i in range(generation_size):
+        step_data = {}
+        for key in ["kl_till_len", "Hmo_till_len", "Hmm_till_len", "cross_ent_till_len",
+                    "excess_acc_err_till_len", "acc_err_till_len", "kl_till_len_norm",
+                    "model_xent_till_len", "oracle_xent_till_len",
+                    "model_xent_ratio", "target_xent_ratio_norm",
+                    "model_xent_till_len_accum", "oracle_xent_till_len_accum",
+                    "kl_at_len", "Hmo_at_len", "Hmm_at_len", "cross_ent_at_len", 
+                    "model_xent_at_len", "oracle_xent_at_len"]:
+            for key_ in (key, f"target_{key}", f"ratio_{key}"):
+                if key_ not in metrics:
+                    continue
+                
+                if i < len(metrics[key_]):
+                    step_data[key_] = metrics[key_][i][1]
 
-  prefix=f'exp_bias/{experiment_suffix}'
-  mean_metrics = get_mean_std_results(metrics, prefix=prefix)
-  experiment.log(mean_metrics)
+        # for key in ["disagreements_till_len", "disagreements_at_len"]:
+        #     for key_ in (key, f"target_{key}"):
+        #         if key_ not in metrics:
+        #             continue
+        #         step_data[key_] = metrics[key_][i]
+        # print(step_data)
+        experiment.log(step_data , step =i)
+
+
+    # for metric in get_accum_results_dhawal(metrics, prefix=prefix):
+    #         experiment.log(metric)
+
+
+
+            # for k, values in run_metrics[key_].items():
+            #     for idx, val in values:
+            #         yield {
+            #             f'{prefix}/{key_}@{k}/{key}': val,
+            #             f'len': idx,
+            #         }
+            # for idx, val in metrics[key_]:
+            #     yield {
+            #         f'{prefix}/{key_}/{key}': val,
+            #         f'len': idx,
+            #     }
+
+#   experiment.log(metrics)
+
+#   for metric in get_eb_accum_results(metrics, prefix=prefix):
+#       experiment.log(metric)
+
+    # prefix=f'exp_bias/{experiment_suffix}'
+    # mean_metrics = get_mean_std_results(metrics, prefix=prefix)
+    # experiment.log(mean_metrics)
 
 if __name__ == '__main__':
 
@@ -173,7 +254,7 @@ if __name__ == '__main__':
                           # default='/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_wikitext103-512',
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
-                          default='./gpt2_models/xl/',
+                          default='./gpt2_models/small/',
                           # default='gpt2-xl',
                           help='Oracle model.')
 
@@ -209,7 +290,7 @@ if __name__ == '__main__':
 
   parser.add_argument('--sampling-temperatures', nargs='+', type=float, default=[],
                       help='Sampling Temperature sampling to use.')
-
+  parser.add_argument('--generation-size', type=int, default=256, help='Number of tokens to generate.')
   parser.add_argument('--context-lens', nargs='+', type=int, 
                       default=[],
                       help='Sampling Temperature sampling to use.')
@@ -241,7 +322,7 @@ if __name__ == '__main__':
           repeat_penalty = 1.0,
           beam = 2,
           sampling_temperature = 1.0,
-          generation_size = 256)
+          generation_size = args.generation_size)
           # single GPU fails for 512 and 256
           # Single rtx8000 can handle 512, with 21 GB's of memory used mostly, so I can make use of 24 GB cards too probably
   #          top_k: int = None,

@@ -324,6 +324,7 @@ def quantify_exposure_bias_pretrained(output_dir: str,
         target_metrics = exposure_bias_target.get_metric(reset=False)
 
         context_tokens = input_dict['input_ids'][:, :context_len]
+        #@DHAWAL where the sentences are generated
         predictions = model.generate(
                         input_ids=context_tokens, 
                         max_length=generation_size,
@@ -350,7 +351,7 @@ def quantify_exposure_bias_pretrained(output_dir: str,
                                 step_logits=step_logits)
 
         metrics = exposure_bias.get_metric(reset=False)
-
+        # @DHAWAL storing generated text
         if output_dir:
             detokenized_contexts = tokenizer.batch_decode(context_tokens,
                                                     skip_special_tokens=True)

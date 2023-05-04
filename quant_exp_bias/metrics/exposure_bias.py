@@ -54,7 +54,7 @@ def repeat_at_1(predictions, targets, context_length):
 
     return total_repeat_at_1, total_wrong_repeat_at_1, total_human_repeat_at_1
 
-
+# NOTE @DHAWAL : The main class which calcualtes all teh metrics for generated sentence
 @Metric.register("exp_bias")
 class ExposureBias(Metric):
     """
