@@ -1,4 +1,4 @@
-python decoding_experiments.py \
+python decoding_experiments_sweep.py \
    --oracle-model ./gpt2_models/xl/ \
    --eval-model ./gpt2_models/small/ \
    --context-dataset wikitext-2 \

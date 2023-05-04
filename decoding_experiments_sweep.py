@@ -102,7 +102,8 @@ def run_exposure_bias_experiment(experiment_name,
             dir=output_dir,
             config=config,
             project='qeb',
-            group='sweep')
+            name=f'{config["top_k"]}_{config["top_p"]}_{config["sampling_temperature"]}_{config["beam"]}_{config["repeat_penalty"]}',
+            group='sweep',reinit=True)
 
 
     metrics = quantify_exposure_bias_pretrained(output_dir,
@@ -177,133 +178,145 @@ def run_exposure_bias_experiment(experiment_name,
 
 if __name__ == '__main__':
 
-  parser = argparse.ArgumentParser(description=f'Exposure Bias Pretrained Experiments.')
-  # parser.add_argument('--experiment-name', type=str, 
-  #                         required=True,
-  #                         help='What experiment is being done.')
+    parser = argparse.ArgumentParser(description=f'Exposure Bias Pretrained Experiments.')
+    # parser.add_argument('--experiment-name', type=str, 
+    #                         required=True,
+    #                         help='What experiment is being done.')
 
-  parser.add_argument('--num-samples', type=int, default=2, help='Number of dataset samples to run this iteration for.')
+    parser.add_argument('--num-samples', type=int, default=2, help='Number of dataset samples to run this iteration for.')
 
-  parser.add_argument('--output-dir', '-o', type=str, default=os.environ.get("OUTPUT_DIR") or os.path.expanduser('~/scratch/quant_exp_bias/'), help='Output directory.')
+    parser.add_argument('--output-dir', '-o', type=str, default=os.environ.get("OUTPUT_DIR") or os.path.expanduser('~/scratch/quant_exp_bias/'), help='Output directory.')
 
-  parser.add_argument('--oracle-model', type=str, 
-                          # default='/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_wikitext103-512',
-                          # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
-                          # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
-                          default='./gpt2_models/small/',
-                          # default='gpt2-xl',
-                          help='Oracle model.')
+    parser.add_argument('--oracle-model', type=str, 
+                            # default='/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_wikitext103-512',
+                            # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
+                            # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
+                            default='./gpt2_models/small/',
+                            # default='gpt2-xl',
+                            help='Oracle model.')
 
-  parser.add_argument('--eval-model', type=str, 
-                          # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
-                          # default='gpt2',
-                          default='./gpt2_models/small/',
-                          help='Oracle model.')
+    parser.add_argument('--eval-model', type=str, 
+                            # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
+                            # default='gpt2',
+                            default='./gpt2_models/small/',
+                            help='Oracle model.')
 
-  parser.add_argument('--sample-outputs', action='store_true', 
-                      help='Recover the run.')
-  
-  parser.add_argument('--context-dataset', type=str, 
-                      default='wikitext-2',
-                      help='Recover the run.')
+    parser.add_argument('--sample-outputs', action='store_true', 
+                        help='Recover the run.')
 
-  parser.add_argument('--context-len', type=int, 
-                          default=50,
-                          help='Oracle model.')
+    parser.add_argument('--context-dataset', type=str, 
+                        default='wikitext-2',
+                        help='Recover the run.')
 
-  parser.add_argument('--top-ks', nargs='+', type=int, default=[],
-                      help='Top-k sampling values to use.')
+    parser.add_argument('--context-len', type=int, 
+                            default=50,
+                            help='Oracle model.')
+
+    parser.add_argument('--top-ks', nargs='+', type=int, default=[],
+                        help='Top-k sampling values to use.')
 
 
-  parser.add_argument('--beams', nargs='+', type=int, default=[],
-                      help='Beam search values to use.')
+    parser.add_argument('--beams', nargs='+', type=int, default=[],
+                        help='Beam search values to use.')
 
-  parser.add_argument('--top-ps', nargs='+', type=float, default=[],
-                      help='Top-p sampling values to use.')
+    parser.add_argument('--top-ps', nargs='+', type=float, default=[],
+                        help='Top-p sampling values to use.')
 
-  parser.add_argument('--rep-penalties', nargs='+', type=float, default=[],
-                      help='Repeatition penalty values to use.')
+    parser.add_argument('--rep-penalties', nargs='+', type=float, default=[],
+                        help='Repeatition penalty values to use.')
 
-  parser.add_argument('--sampling-temperatures', nargs='+', type=float, default=[],
-                      help='Sampling Temperature sampling to use.')
-  parser.add_argument('--generation-size', type=int, default=256, help='Number of tokens to generate.')
-  parser.add_argument('--context-lens', nargs='+', type=int, 
-                      default=[],
-                      help='Sampling Temperature sampling to use.')
-  cuda_device = parser.add_mutually_exclusive_group(required=False)
-  cuda_device.add_argument('--cuda-device',
+    parser.add_argument('--sampling-temperatures', nargs='+', type=float, default=[],
+                        help='Sampling Temperature sampling to use.')
+    parser.add_argument('--generation-size', type=int, default=256, help='Number of tokens to generate.')
+    parser.add_argument('--context-lens', nargs='+', type=int, 
+                        default=[],
+                        help='Sampling Temperature sampling to use.')
+    cuda_device = parser.add_mutually_exclusive_group(required=False)
+    cuda_device.add_argument('--cuda-device',
                             type=int,
                             default=-1,
                             help='id of GPU to use (if any)')
-  args = parser.parse_args()
+    args = parser.parse_args()
 
-  experiment_suffix = 'base/'
-  experiment_name = f'qeb_{args.eval_model}_{args.oracle_model}_{str(uuid.uuid4().fields[0])}'
+    experiment_suffix = 'base/'
+    experiment_name = f'qeb_{args.eval_model}_{args.oracle_model}_{str(uuid.uuid4().fields[0])}'
 
-  if args.sample_outputs:
-    experiment_name += "_sampled"
+#   if args.sample_outputs:
+    #     experiment_name += "_sampled"
 
     for top_k in args.top_ks:
         for top_p in args.top_ps:
             for beam in args.beams:
-                for sampling_temp in args.sampling_temperatures:
+                for rp in [None, 0.1,  1.0, 2.0]:
+                    config = {}
+                        # experiment_suffix_= experiment_suffix + f'top-k/{top_k}/top-p/{top_p}/temp/{sampling_temp}'
+                        # experiment_name += f'_top_k_{top_k}_top_p_{top_p}_temp_{sampling_temp}'
+                    
+                    config['top_k'] = top_k
+                    config['top_p'] = top_p
+                    
+                    config['beam'] = beam
+                    config['do_sample'] = True
+                    config['generation_size'] = args.generation_size
+                    config['repeat_penalty'] = rp
                 
-                    # experiment_suffix_= experiment_suffix + f'top-k/{top_k}/top-p/{top_p}/temp/{sampling_temp}'
-                    # experiment_name += f'_top_k_{top_k}_top_p_{top_p}_temp_{sampling_temp}'
-                    args['top_k'] = top_k
-                    args['top_p'] = top_p
-                    args['sampling_temperature'] = sampling_temp
-                    args['beam'] = beam
-                    args['do_sample'] = True
-
-                    run_exposure_bias_experiment(experiment_name, args,
-                            num_samples=args.num_samples,
-                            base_output_dir=args.output_dir,
-                            eval_model=args.eval_model,
-                            oracle_model=args.oracle_model,
-                            context_file_or_filename=args.context_dataset,
-                            context_len=args.context_len,
-                            cuda_device=args.cuda_device,
-                            sample_outputs=True,
-                            top_k=top_k,
-                            top_p=top_p,
-                            sampling_temperature=sampling_temp,
-                            experiment_suffix=experiment_suffix)
-                
-                args['do_sample'] = False
-                args['sampling_temperature'] = 1.0
-                run_exposure_bias_experiment(experiment_name, args,
-                            num_samples=args.num_samples,
-                            base_output_dir=args.output_dir,
-                            eval_model=args.eval_model,
-                            oracle_model=args.oracle_model,
-                            context_file_or_filename=args.context_dataset,
-                            context_len=args.context_len,
-                            cuda_device=args.cuda_device,
-                            sample_outputs=False,
-                            top_k=top_k,
-                            top_p=top_p,
-                            sampling_temperature=1.0,
-                            experiment_suffix=experiment_suffix)
+                # for sampling_temp in args.sampling_temperatures:
+                #     print(f"Doing args : {top_k} {top_p} {sampling_temp} {beam}")
+                #     config['sampling_temperature'] = sampling_temp
+                #     run_exposure_bias_experiment(experiment_name, config,
+                #             num_samples=args.num_samples,
+                #             base_output_dir=args.output_dir,
+                #             eval_model=args.eval_model,
+                #             oracle_model=args.oracle_model,
+                #             context_file_or_filename=args.context_dataset,
+                #             context_len=args.context_len,
+                #             cuda_device=args.cuda_device,
+                #             sample_outputs=True,
+                #             top_k=top_k,
+                #             top_p=top_p,
+                #             sampling_temperature=sampling_temp,
+                #             beam=beam,
+                #             experiment_suffix=experiment_suffix,
+                #             generation_size = args.generation_size)
+                    
+                    config['do_sample'] = False
+                    config['sampling_temperature'] = 0.0
+                    print(f"Doing args : {top_k} {top_p} 0.0 {beam} {rp}")
+                    run_exposure_bias_experiment(experiment_name, config,
+                                num_samples=args.num_samples,
+                                base_output_dir=args.output_dir,
+                                eval_model=args.eval_model,
+                                oracle_model=args.oracle_model,
+                                context_file_or_filename=args.context_dataset,
+                                context_len=args.context_len,
+                                cuda_device=args.cuda_device,
+                                sample_outputs=False,
+                                top_k=top_k,
+                                top_p=top_p,
+                                sampling_temperature=1.0,
+                                beam=beam,
+                                experiment_suffix=experiment_suffix,
+                                repeat_penalty=rp,
+                                generation_size = args.generation_size)
 
                     
   
-  run_exposure_bias_experiment(experiment_name, args,
-          num_samples=args.num_samples,
-          base_output_dir=args.output_dir,
-          eval_model=args.eval_model,
-          oracle_model=args.oracle_model,
-          context_file_or_filename=args.context_dataset,
-          context_len=args.context_len,
-          cuda_device=args.cuda_device,
-          sample_outputs=False,
-          experiment_suffix=experiment_suffix,
-          top_k = 10,
-          top_p = 0.9,
-          repeat_penalty = 1.0,
-          beam = 2,
-          sampling_temperature = 1.0,
-          generation_size = args.generation_size)
+#   run_exposure_bias_experiment(experiment_name, args,
+#           num_samples=args.num_samples,
+#           base_output_dir=args.output_dir,
+#           eval_model=args.eval_model,
+#           oracle_model=args.oracle_model,
+#           context_file_or_filename=args.context_dataset,
+#           context_len=args.context_len,
+#           cuda_device=args.cuda_device,
+#           sample_outputs=False,
+#           experiment_suffix=experiment_suffix,
+#           top_k = 10,
+#           top_p = 0.9,
+#           repeat_penalty = 1.0,
+#           beam = 2,
+#           sampling_temperature = 1.0,
+#           generation_size = args.generation_size)
           # single GPU fails for 512 and 256
           # Single rtx8000 can handle 512, with 21 GB's of memory used mostly, so I can make use of 24 GB cards too probably
   #          top_k: int = None,
