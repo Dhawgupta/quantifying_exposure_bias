@@ -325,6 +325,7 @@ def quantify_exposure_bias_pretrained(output_dir: str,
 
         context_tokens = input_dict['input_ids'][:, :context_len]
         #@DHAWAL where the sentences are generated
+        # https://huggingface.co/docs/transformers/main_classes/text_generation
         predictions = model.generate(
                         input_ids=context_tokens, 
                         max_length=generation_size,

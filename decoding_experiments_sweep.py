@@ -10,63 +10,6 @@ from quant_exp_bias.commands.quantify_exposure_bias_pretrained import quantify_e
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
 
-def get_accum_results_dhawal(run_metrics: Dict[str, Any], prefix='exp_bias'):
-    for key in ["disagreements_till_len", "disagreements_at_len"]:
-        for key_ in (key, f"target_{key}"):
-            if key_ not in run_metrics:
-                continue
-
-            for k, values in run_metrics[key_].items():
-                for idx, val in values:
-                    yield {
-                        f'{prefix}/{key_}@{k}/{key}': val,
-                        f'len': idx,
-                    }
-    # list_dicts = []
-    # for key in ["kl_till_len", "Hmo_till_len", "Hmm_till_len", "cross_ent_till_len",
-    #             "excess_acc_err_till_len", "acc_err_till_len", "kl_till_len_norm",
-    #             "model_xent_till_len", "oracle_xent_till_len",
-    #             "model_xent_ratio", "target_xent_ratio_norm",
-    #             "model_xent_till_len_accum", "oracle_xent_till_len_accum",
-    #             "kl_at_len", "Hmo_at_len", "Hmm_at_len", "cross_ent_at_len", 
-    #             "model_xent_at_len", "oracle_xent_at_len"]:
-    #     for key_ in (key, f"target_{key}", f"ratio_{key}"):
-    #         if key_ not in run_metrics:
-    #             continue
-                
-            
-    #         for idx, val in run_metrics[key_]:
-
-                
-def get_eb_accum_results(run_metrics: Dict[str, Any], prefix='exp_bias'):
-    for key in ["kl_till_len", "Hmo_till_len", "Hmm_till_len", "cross_ent_till_len",
-                "excess_acc_err_till_len", "acc_err_till_len", "kl_till_len_norm",
-                "model_xent_till_len", "oracle_xent_till_len",
-                "model_xent_ratio", "target_xent_ratio_norm",
-                "model_xent_till_len_accum", "oracle_xent_till_len_accum",
-                "kl_at_len", "Hmo_at_len", "Hmm_at_len", "cross_ent_at_len", 
-                "model_xent_at_len", "oracle_xent_at_len"]:
-        for key_ in (key, f"target_{key}", f"ratio_{key}"):
-            if key_ not in run_metrics:
-                continue
-                
-            for idx, val in run_metrics[key_]:
-                yield {
-                    f'{prefix}/{key_}/{key}': val,
-                    f'len': idx,
-                }
-    
-    for key in ["disagreements_till_len", "disagreements_at_len"]:
-        for key_ in (key, f"target_{key}"):
-            if key_ not in run_metrics:
-                continue
-
-            for k, values in run_metrics[key_].items():
-                for idx, val in values:
-                    yield {
-                        f'{prefix}/{key_}@{k}/{key}': val,
-                        f'len': idx,
-                    }
 
 def get_mean_std_results(run_metrics: Dict[str, Any],
                          prefix:str ='exp_bias', 
@@ -154,20 +97,13 @@ def run_exposure_bias_experiment(experiment_name,
     output_dir = os.path.join(base_output_dir, 
                     'exp_bias', experiment_suffix)
 
-    # experiment = wandb.init(
-    #         dir=output_dir,
-    #         config=config,
-    #         project='qeb',
-    #         group=experiment_name)
+
     experiment = wandb.init(
             dir=output_dir,
             config=config,
             project='qeb',
-            group='test')
-    # experiment = wandb.init(
-    #         dir=output_dir,
-    #         config=config,
-    #         project='qeb')
+            group='sweep')
+
 
     metrics = quantify_exposure_bias_pretrained(output_dir,
                 eval_model=eval_model, 
@@ -306,6 +242,51 @@ if __name__ == '__main__':
 
   if args.sample_outputs:
     experiment_name += "_sampled"
+
+    for top_k in args.top_ks:
+        for top_p in args.top_ps:
+            for beam in args.beams:
+                for sampling_temp in args.sampling_temperatures:
+                
+                    # experiment_suffix_= experiment_suffix + f'top-k/{top_k}/top-p/{top_p}/temp/{sampling_temp}'
+                    # experiment_name += f'_top_k_{top_k}_top_p_{top_p}_temp_{sampling_temp}'
+                    args['top_k'] = top_k
+                    args['top_p'] = top_p
+                    args['sampling_temperature'] = sampling_temp
+                    args['beam'] = beam
+                    args['do_sample'] = True
+
+                    run_exposure_bias_experiment(experiment_name, args,
+                            num_samples=args.num_samples,
+                            base_output_dir=args.output_dir,
+                            eval_model=args.eval_model,
+                            oracle_model=args.oracle_model,
+                            context_file_or_filename=args.context_dataset,
+                            context_len=args.context_len,
+                            cuda_device=args.cuda_device,
+                            sample_outputs=True,
+                            top_k=top_k,
+                            top_p=top_p,
+                            sampling_temperature=sampling_temp,
+                            experiment_suffix=experiment_suffix)
+                
+                args['do_sample'] = False
+                args['sampling_temperature'] = 1.0
+                run_exposure_bias_experiment(experiment_name, args,
+                            num_samples=args.num_samples,
+                            base_output_dir=args.output_dir,
+                            eval_model=args.eval_model,
+                            oracle_model=args.oracle_model,
+                            context_file_or_filename=args.context_dataset,
+                            context_len=args.context_len,
+                            cuda_device=args.cuda_device,
+                            sample_outputs=False,
+                            top_k=top_k,
+                            top_p=top_p,
+                            sampling_temperature=1.0,
+                            experiment_suffix=experiment_suffix)
+
+                    
   
   run_exposure_bias_experiment(experiment_name, args,
           num_samples=args.num_samples,
@@ -332,105 +313,3 @@ if __name__ == '__main__':
   #                         sample_outputs: bool = False,
   #                         sampling_temperature: float = None,)
   # exit()
-
-
-
-  # All code below this is probably not relevant
-  # NOTE this is for trying out different parameter values
-
-  # if len(args.context_lens) > 0:
-  #   experiment_name += '_context_len_exp'
-
-  # for context_len in args.context_lens:
-  #   experiment_suffix_ = experiment_suffix + f'context_len/{context_len}'
-  #   run_exposure_bias_experiment(experiment_name, args, 
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=args.sample_outputs,
-  #           experiment_suffix=experiment_suffix_)
-
-  # sample_outputs = True
-  # if len(args.context_lens) > 0 or len(args.top_ps) > 0 or \
-  #     len(args.sampling_temperatures) > 0:
-  #   experiment_suffix += "/sampled/"
-  #   experiment_name += '_sampling_exp'
-
-  # for beam in args.beams:
-  #   experiment_suffix_= experiment_suffix + f'beam/{beam}'
-  #   experiment_name += f'_beam_{beam}'
-  #   run_exposure_bias_experiment(experiment_name, args,
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=args.context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=True,
-  #           beam=beam,
-  #           experiment_suffix=experiment_suffix_)
-
-  # for top_k in args.top_ks:
-  #   experiment_suffix_= experiment_suffix + f'top-k/{top_k}'
-  #   experiment_name += f'_top_k_{top_k}'
-  #   run_exposure_bias_experiment(experiment_name, args,
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=args.context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=True,
-  #           top_k=top_k,
-  #           experiment_suffix=experiment_suffix_)
-
-  # for top_p in args.top_ps:
-  #   experiment_suffix_= experiment_suffix + f'top-p/{top_p}'
-  #   experiment_name += f'_top_p_{top_p}'
-  #   run_exposure_bias_experiment(experiment_name, args,
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=args.context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=True,
-  #           top_p=top_p,
-  #           experiment_suffix=experiment_suffix_)
-
-
-  # for repeat_penalty in args.rep_penalties:
-  #   experiment_suffix_= experiment_suffix + f'rep-penalty/{repeat_penalty}'
-  #   experiment_name += f'_rep_penalty_{repeat_penalty}'
-  #   run_exposure_bias_experiment(experiment_name, args,
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=args.context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=False,
-  #           repeat_penalty=repeat_penalty,
-  #           experiment_suffix=experiment_suffix_)
-
-  # for sampling_temp in args.sampling_temperatures:
-  #   experiment_suffix_=experiment_suffix + f'temp/{sampling_temp}'
-  #   run_exposure_bias_experiment(experiment_name, args,
-  #           num_samples=args.num_samples,
-  #           base_output_dir=args.output_dir,
-  #           eval_model=args.eval_model,
-  #           oracle_model=args.oracle_model,
-  #           context_file_or_filename=args.context_dataset,
-  #           context_len=args.context_len,
-  #           cuda_device=args.cuda_device,
-  #           sample_outputs=True,
-  #           sampling_temperature=sampling_temp,
-  #           experiment_suffix=experiment_suffix_)
