@@ -215,14 +215,14 @@ if __name__ == '__main__':
                           # default='/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_wikitext103-512',
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
-                          default='./gpt2_models/small/',
+                          default='./oracle/',
                           # default='gpt2-xl',
                           help='Oracle model.')
 
   parser.add_argument('--eval-model', type=str, 
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default='gpt2',
-                          default='./gpt2_models/small/',
+                          default='./gpt2_small_wiki/',
                           help='Oracle model.')
 
   parser.add_argument('--sample-outputs', action='store_true', 
