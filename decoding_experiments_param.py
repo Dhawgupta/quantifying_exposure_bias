@@ -207,7 +207,7 @@ if __name__ == '__main__':
   #                         required=True,
   #                         help='What experiment is being done.')
 
-  parser.add_argument('--num-samples', type=int, default=200, help='Number of dataset samples to run this iteration for.')
+  parser.add_argument('--num-samples', type=int, default=1, help='Number of dataset samples to run this iteration for.')
 
   parser.add_argument('--output-dir', '-o', type=str, default=os.environ.get("OUTPUT_DIR") or os.path.expanduser('~/scratch/quant_exp_bias/'), help='Output directory.')
 
@@ -215,14 +215,16 @@ if __name__ == '__main__':
                           # default='/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_wikitext103-512',
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
-                          default='./oracle/',
+                        #   default='./oracle/',
+                        default='./gpt2_models/xl/',
                           # default='gpt2-xl',
                           help='Oracle model.')
 
   parser.add_argument('--eval-model', type=str, 
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default='gpt2',
-                          default='./gpt2_small_wiki/',
+                        #   default='./gpt2_small_wiki/',
+                        default='./gpt2_models/small/',
                           help='Oracle model.')
 
   parser.add_argument('--sample-outputs', action='store_true', 
@@ -264,5 +266,5 @@ if __name__ == '__main__':
           repeat_penalty = 1.0,
           beam = 5,
           sampling_temperature = 1.0,
-          generation_size = args.generation_size)
+          generation_size = 256)
   
