@@ -5,7 +5,8 @@ import logging
 from typing import Dict, List, Callable, Tuple, Union, Any
 import wandb
 import uuid
-
+import os, sys
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from quant_exp_bias.commands.quantify_exposure_bias_pretrained import quantify_exposure_bias_pretrained
 
 logger = logging.getLogger(__name__)  # pylint: disable=invalid-name
@@ -216,7 +217,7 @@ if __name__ == '__main__':
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
                         #   default='./oracle/',
-                        default='./gpt2_models/xl/',
+                        default='./gpt2_models/small/',
                           # default='gpt2-xl',
                           help='Oracle model.')
 
@@ -241,7 +242,7 @@ if __name__ == '__main__':
   cuda_device = parser.add_mutually_exclusive_group(required=False)
   cuda_device.add_argument('--cuda-device',
                             type=int,
-                            default=0,
+                            default=-1,
                             help='id of GPU to use (if any)')
   args = parser.parse_args()
 

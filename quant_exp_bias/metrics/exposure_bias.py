@@ -245,9 +245,9 @@ class ExposureBias(Metric):
                 oracle_step_prob = torch.exp(oracle_step_log_prob)
                 step_prob = torch.exp(step_log_prob)
                 # KL(Model || Oracle)
-                # kl = F.kl_div(step_log_prob,oracle_step_prob,reduction='sum')
+                kl = F.kl_div(step_log_prob,oracle_step_prob,reduction='sum')
                 # KL(Oracle || Model)
-                kl = F.kl_div(oracle_step_log_prob,step_prob,reduction='sum')
+                # kl = F.kl_div(oracle_step_log_prob,step_prob,reduction='sum')
                 # Cross Entropy E_{oracle}[log P_{model}]
                 cross_ent =  (-1 * oracle_step_prob * step_log_prob).sum()
                 # Entropy Oracle
