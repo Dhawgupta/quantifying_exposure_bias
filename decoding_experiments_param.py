@@ -208,7 +208,7 @@ if __name__ == '__main__':
   #                         required=True,
   #                         help='What experiment is being done.')
 
-  parser.add_argument('--num-samples', type=int, default=1, help='Number of dataset samples to run this iteration for.')
+  parser.add_argument('--num-samples', type=int, default=10, help='Number of dataset samples to run this iteration for.')
 
   parser.add_argument('--output-dir', '-o', type=str, default=os.environ.get("OUTPUT_DIR") or os.path.expanduser('~/scratch/quant_exp_bias/'), help='Output directory.')
 
@@ -217,7 +217,7 @@ if __name__ == '__main__':
                           # default='/home/mila/a/arorakus/wdir//quant_exp_bias/data/gpt2_wikitext2-128',
                           # default="/home/mila/a/arorakus/wdir/quant_exp_bias/data/gpt2_orig_wikitext103-512/",
                         #   default='./oracle/',
-                        default='./gpt2_models/small/',
+                        default='./gpt2_models/xl/',
                           # default='gpt2-xl',
                           help='Oracle model.')
 
@@ -242,7 +242,7 @@ if __name__ == '__main__':
   cuda_device = parser.add_mutually_exclusive_group(required=False)
   cuda_device.add_argument('--cuda-device',
                             type=int,
-                            default=-1,
+                            default=0,
                             help='id of GPU to use (if any)')
   args = parser.parse_args()
 
@@ -267,5 +267,5 @@ if __name__ == '__main__':
           repeat_penalty = 1.0,
           beam = 5,
           sampling_temperature = 1.0,
-          generation_size = 256)
+          generation_size = 640)
   
