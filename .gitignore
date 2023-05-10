@@ -134,3 +134,6 @@ oracle/*
 *.out
 
 wandb/*
+test_trainer/
+
+__pycache__
