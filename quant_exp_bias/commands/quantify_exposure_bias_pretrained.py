@@ -311,14 +311,14 @@ def quantify_exposure_bias_pretrained(output_dir: str,
         with torch.no_grad():
             oracle_prediction = oracle_lm_model.generate(input_ids=context_tokens, 
                         max_length=generation_size,
-                        do_sample=sample_outputs,
+                        do_sample=False,
                         top_k=top_k, 
                         top_p=top_p,
-                        num_beams=beam,
-                        repetition_penalty=repeat_penalty,
+                        num_beams=1,
+                        repetition_penalty=None,
                         temperature=sampling_temperature)
             # output_dict = model(**input_dict)
-            rollin_step_logits = model(input_ids=oracle_prediction)
+            output_dict = model(input_ids=oracle_prediction)
             # oracle_prediction = oracle_model.generate(input_ids=context_tokens, 
             #             max_length=generation_size,
             #             do_sample=sample_outputs,
@@ -348,7 +348,7 @@ def quantify_exposure_bias_pretrained(output_dir: str,
         
         # The logits for the original sentence for the underlying models
         # TODO compare the logits for the original sentence and the generated sentence
-        # rollin_step_logits = output_dict['logits']
+        rollin_step_logits = output_dict['logits']
 
         target_outputs = exposure_bias_target(
                             predictions=detokenized_targets,
@@ -628,7 +628,8 @@ def quantify_exposure_bias_pretrained(output_dir: str,
         "target_model_xent_till_len_accum": target_model_xent_till_len_accum,
         "oracle_xent_till_len_accum": oracle_xent_till_len_accum,
         "target_oracle_xent_till_len_accum": target_oracle_xent_till_len_accum,
-
+        
+        # THings we care about
         "ratio_kl_till_len": ratio_kl_till_len,
         "acc_err_till_len": acc_err_till_len,
         "excess_acc_err_till_len": excess_acc_err_till_len,
